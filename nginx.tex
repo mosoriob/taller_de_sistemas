@@ -1,0 +1,201 @@
+\documentclass[11pt]{exam}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[scale=0.8]{geometry}
+\usepackage[spanish]{babel}
+\usepackage{float}
+\usepackage{graphicx,xcolor}
+\usepackage{hyperref}
+\title{Instalación de un webserver basado en nginx} \author{Maximiliano Osorio \\ mosorio@inf.utfsm.cl}
+\date{Valparaíso, \today}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+}
+\usepackage{listings}
+
+\lstset{
+    frame=single,
+    breaklines=true,
+}
+\usepackage{marginnote}
+
+\begin{document}
+\maketitle
+\makebox[\textwidth]{Nombre:\enspace\hrulefill}
+\vspace{5mm}
+
+Nota:
+\begin{itemize}
+	\item Los textos de documentación o manuales serán presentados en su idioma original.
+	\item Ante cualquier duda, avise.
+\end{itemize}
+
+\section{Definición}
+
+Nginx is a web server, which can also be used as a reverse proxy, load balancer and HTTP cache.
+Nginx was written with an explicit goal of outperforming the Apache web server. Out of the box, serving static files, Nginx uses dramatically less memory than Apache, and can handle roughly four times more requests per second. This performance boost comes at a cost of decreased flexibility, such as the ability to override systemwide access settings on a per-file basis (Apache accomplishes this with an .htaccess file, while Nginx has no such feature built in). Formerly, adding third party modules to nginx required recompiling the application from source with the modules statically linked. This was partially overcome in version 1.9.11 with the addition of dynamic module loading. However, the modules still must be compiled at the same time as nginx, and not all modules are compatible with this system; those require the older static linking process
+
+
+\section{Ejercicio}
+\begin{enumerate}
+	%P1
+	\item Visitar la página \url{https://www.nginx.com/resources/wiki/start/topics/tutorials/install/} para obtener los repositorios. Considere la arquitectura y el sistema operativo que se encuentra utilizando.
+	\begin{lstlisting}
+[root@classroom ~]# uname -ra
+[root@classroom ~]# cat /etc/*release
+	\end{lstlisting}
+
+	\item Instale el repositorio y activelo, recuerde que los repositorios van en \texttt{/etc/yum.repos.d/}.
+
+	\item Utilice el comando yum para entregar la versión de nginx disponible. Si necesita ayuda, utilice el comando \texttt{man}.
+	\begin{lstlisting}
+man yum
+	\end{lstlisting}
+
+	\item Active la opción gpgcheck del repositorio.
+
+	\item Utilice la llave pública de nginx \url{http://nginx.org/keys/nginx_signing.key}
+	%SUBPREGUNTA
+	\begin{itemize}
+		\item Para descargar la llave utilice \texttt{wget} o  \texttt{curl}. Si presenta problemas con \texttt{wget} lea el error con calma.
+	\begin{lstlisting}
+curl url -o file
+wget url
+	\end{lstlisting}
+	%P
+	\item Importe la llave GPG del llavero de rpm (no tiene relación con el llave de gpg). Si necesita ayuda utilice man, \texttt{man yum} no va a resolver el problema. Le recomiendo utilizar
+	\begin{lstlisting}
+man man #we heard you like man, so we put a manual in your manual
+	\end{lstlisting}
+	\begin{itemize}
+		\item Consulte la opción \texttt{-k}
+		\item Utilice:
+		\begin{lstlisting}
+man -k rpm
+		\end{lstlisting}
+	\end{itemize}
+	\item De acuerdo al output seleccione el manual adecuado.
+	\end{itemize}
+
+	\item Instale nginx.
+	\item Muestre todas las versiones de nginx.
+	\begin{lstlisting}
+yum --showduplicates list nginx		
+	\end{lstlisting}
+	\item Explique el output del comando anterior.
+\vspace{1in}
+	\item Verifique el repositorio origen desde donde instaló el paquete.
+		\begin{lstlisting}
+man yum
+	\end{lstlisting}
+	\item Muestre el número de directorios y ficheros se instalan con el paquete nginx.
+	\begin{itemize}
+		\item Le aconsejo leer el manual de rpm, dos secciones del \texttt{man rpm}
+			\begin{lstlisting}
+   QUERYING AND VERIFYING PACKAGES:
+	\end{lstlisting}
+	\begin{lstlisting}
+   PACKAGE QUERY OPTIONS:
+	\end{lstlisting}
+	\end{itemize}
+	\item Anote cuántos archivos y directorios se instalaron.  Ejemplo: Hay 45 ficheros y directorios en total.
+\vspace{1in}
+
+	\item Dado el output del comando anterior, si desea cambiar las configuraciones de nginx ¿dónde se encuentran los archivos de configuración: \texttt{usr, etc, var o opt}?
+\vspace{1in}
+
+	\item Explique que significa las directivas, favor utilice \url{http://nginx.org/en/docs/}:
+	\begin{itemize}
+		\item \texttt{include}
+		\vspace{0.3in}
+		\item \texttt{keepalive\_timeout}
+				\vspace{0.3in}
+		\item \texttt{worker\_processes}
+				\vspace{0.3in}
+		\item \texttt{user}
+				\vspace{0.3in}
+
+	\end{itemize}
+
+	\item Explique que valor usted utilizaría para la directiva \texttt{worker\_processes}, lea la  sección \url{http://nginx.org/en/docs/ngx_core_module.html}.
+		\vspace{1in}
+		\newpage
+\section{Configuración de un dominio en particular}
+Server blocks (similar a los virtual hosts en Apache) pueden ser utilizados para encerrar los detalles de la configuración para múltiples hosts, páginas u otros en un servidor. Cada server blocks se coloca en \texttt{/etc/nginx/conf.d}
+
+	\item Copie el archivo \texttt{default.conf} con el nombre \texttt{homerswebpage} ¿qué extensión debe tener?. Justifique utilizando la directiva \texttt{include}. 
+		\vspace{1in}
+
+	\item Cree un directorio \texttt{homerswebpage} en \texttt{/var/www/}
+	\item Explique la siguiente línea.\begin{lstlisting}
+access_log  /var/log/nginx/log/host.access.log  main;		
+	\end{lstlisting}
+			\vspace{1in}
+
+	\item Lea la sección Root Directory and Index Files \url{https://www.nginx.com/resources/admin-guide/serving-static-content/}. Considere que va a montar una página web estática usando html.
+	\item Dado el archivo de configuración de homerswebpage (con la extensión correcta), explique las siguientes directivas o variables: 
+	\begin{itemize}
+		\item root
+		\vspace{0.5in}
+		\item index
+				\vspace{0.5in}
+
+		\item autoindex
+				\vspace{0.5in}
+
+		\item servername
+				\vspace{0.5in}
+
+	\end{itemize}
+	\item Configure pensando que la pagina principal será index.html y va a responde sólo a \texttt{www.homerswebpage.com homerswebpage.com}.
+	\item Cambie los permisos rwx,rx,rx a la carpeta de la web de homero.
+	\item Ejecute, esto realiza un cambio de contexto de SElinux
+	\begin{lstlisting}
+restorecon -Rv /var/www/homerswebpage/
+	\end{lstlisting}
+	\item Ejecute, esto abre el firewall de la máquina
+\begin{lstlisting}
+firewall-cmd --permanent --zone=public --add-service=http	
+\end{lstlisting}
+	\item Obtenga la dirección IPV4 de la máquina con el comando \texttt{ip}
+	\item Explique el uso de la opción de -H de curl.
+					\vspace{3in}
+
+	\item Inicie y active el servicio de nginx.
+	\item Realice una prueba, cambie la dirección IP correspondiente, puede utilizar el siguiente comando.
+\begin{lstlisting}
+[mrx@larrain ~]$ curl -H 'Host: homerswebpage.com' 10.10.2.224	
+\end{lstlisting}
+
+\end{enumerate}
+\newpage
+\section{Opcional: Proxypass}
+En la sección usted va levantar una aplicación con node, la aplicación se encuentra escuchando en el puerto 8080, luego configurará Nginx para realizar un proxypass hacia la aplicación node. Básicamente un \texttt{proxypass} permite tomar un request y enviarlo a otro servidor (normalmente un backend). Luego este reenvía la respuesta al cliente.
+
+
+\begin{itemize}
+	\item Baje el siguiente archivo \url{www.inf.utfsm.cl/~mosorio/hello.js}, reemplace la dirección IP por su IP.
+	\item Instale el paquete \texttt{nodejs}
+	\item Ejecute en otra terminal 
+	\begin{lstlisting}
+[root@classroom homerswebpage]# node hello.js
+	\end{lstlisting}
+	\item Lea \url{https://goo.gl/nBSg7R} y explique las siguientes lineas.
+	\begin{lstlisting}
+    location / {
+        proxy_set_header HOST $host;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://localhost;
+    }
+	\end{lstlisting}
+					\vspace{3in}
+	\item Configure según lo aprendido.
+	\item Ejecute
+	\begin{lstlisting}
+setsebool -P httpd_can_network_connect 1		
+	\end{lstlisting}
+\end{itemize}
+\end{document}
