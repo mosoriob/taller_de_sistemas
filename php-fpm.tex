@@ -1,0 +1,101 @@
+\documentclass[11pt]{exam}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[scale=0.8]{geometry}
+\usepackage[spanish]{babel}
+\usepackage{amssymb}
+\usepackage{float}
+\usepackage{graphicx,xcolor}
+\usepackage{hyperref}
+\title{Configuración de nginx con php-fpm} \author{Maximiliano Osorio \\ mosorio@inf.utfsm.cl}
+\date{Valparaíso, \today}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks = true,
+}
+\usepackage{listings}
+
+\lstset{
+    frame=single,
+    breaklines=true,
+    postbreak=\raisebox{0ex}[0ex][0ex]{\ensuremath{\color{red}\hookrightarrow\space}}
+}
+\usepackage{marginnote}
+
+\begin{document}
+\maketitle
+\makebox[\textwidth]{Nombre:\enspace\hrulefill}
+\vspace{5mm}
+
+Nota:
+\begin{itemize}
+	\item Los textos de documentación o manuales serán presentados en su idioma original.
+	\item Ante cualquier duda, avise.
+\end{itemize}
+
+\section{Introducción}
+PHP-FPM (FastCGI Process Manager) is an alternative PHP FastCGI implementation with some additional features useful for sites of any size, especially busier sites.
+
+\section{Ejercicio}
+En este ejercicio usted configurará la web de Homero Simpsons para servir contenido dinámico escrito en \texttt{php}. Los requerimientos de Homero son: Utilizar Nginx sí o sí. Dado eso, usted configurará Nginx y php-fpm para cumplir con el requerimiento.
+
+\subsection{Configuración php-fpm}
+\begin{enumerate}
+	\item Realice la instalación del paquete \texttt{php-fpm}
+	\item ¿Que versión de php se encuentra instalando?. Comente sobre la versión de php: ¿es nueva? ¿es segura?.
+	\vspace{0.9in}
+	\item Identifique los archivos de configuración de php-fpm, escriba el comando que utilizó.
+	\vspace{0.9in}
+	\item php-fpm puede crear y administrar múltiples pools de procesos php, también conocidos como workers que reciben y sirven requests para ejecutar archivos php del directorio web. Ahora php-fpm puede correr distintos pools, por ejemplo, se puede utilizar distintas configuraciones de pool para distintas aplicaciones. En \texttt{/etc/php-fpm.d/} se encuentran las configuraciones. Considerando lo anterior, describa las siguientes variables.
+	\begin{enumerate}
+		\item listen: Explique la definición y la diferencia entre usar un unix socket o un TCP socket
+		\item user y group. Explique la definición y que utilizaría en su servidor actual.
+		\item pm: Explique la definición y que valor usaría.
+		\item pm.max\_children, pm.start\_servers, pm.min\_spare\_servers, pm.max\_spare\_servers y pm.max\_requests. Explique la definición de cada una de las variables y que aspectos consideraría para calcular sus valores.
+		\item slowlog: Explique la definición.
+	\end{enumerate}
+	\vspace{5in}
+	\item Inicie y active el servicio.
+	\item Verifique que el proceso se encuentra corriendo. ¿Cuántos proceso se encuentra corriendo? Justifique el número.
+\end{enumerate}
+
+\subsection{Configuración nginx para php-fpm}
+En esta sección usted modificará el archivo de configuración del virtual host (server block) de la web de Homero, según la experiencia anterior se encuentra en \texttt{/etc/nginx/conf.d/homerswebpage.conf}
+\begin{enumerate}
+	\item Primero lea el articulo de DigitalOcean \footnote{Digital Ocean normalmente tiene buenos árticulos} en la sección \textit{Matching Location Blocks}.
+	\item Explique cómo funciona los matchs:
+	\begin{itemize}
+		\item (none)
+		\item =
+		\item $\thicksim$
+		\item $\thicksim$*
+		\item $\wedge\thicksim$
+	\end{itemize}
+	\newpage
+	\item Explique: try\_files, fastcgi\_pass, fastcgi\_param
+	\begin{lstlisting}
+	...
+    index index.php index.html index.htm;
+    root /var/www/homerswebpage/;
+    location / {
+        try_files $uri $uri/ =404;
+    }
+    error_page 404 /404.html;
+    error_page 500 502 503 504 /50x.html;
+    location = /50x.html {
+        root /usr/share/nginx/html;
+    }
+
+    location ~ \.php$ {
+        try_files $uri =404;
+        fastcgi_pass unix:/var/run/php-fpm/php-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+	\end{lstlisting}
+	\vspace{3.5in}
+	\item Configure el virtual host del homero con lo anterior.
+\end{enumerate}
+
+\end{document}
